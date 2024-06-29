@@ -31,7 +31,7 @@ const studentSchema = new Schema<Student>({
   guardian: guardianName,
   localGuardian: Localguadian,
   profileImage: { type: String },
-  isActive: ['Active', 'inActive'],
+  isActive: ['Active', 'inActive'], 
 });
 
 
