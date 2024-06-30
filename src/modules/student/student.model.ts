@@ -1,5 +1,12 @@
 import { Schema, model } from 'mongoose';
-import { IGuardian, LocalGuardian, Student } from './student.interface';
+import {
+  IGuardian,
+  LocalGuardian,
+  Student,
+  StudentCustomModel,
+} from './student.interface';
+import bcrypt from 'bcrypt';
+import config from '../../app/config';
 
 const guardianName = new Schema<IGuardian>({
   fatherName: { type: String, required: true },
@@ -17,20 +24,23 @@ const Localguadian = new Schema<LocalGuardian>({
   address: { type: String, required: true },
 });
 
-const studentSchema = new Schema<Student>({
+const studentSchema = new Schema<Student, StudentCustomModel>({
   id: { type: String, required: true, unique: true },
+  password: { type: String },
   name: {
-    firstName: { type: String, required: true, trim: true,
-    validate: {
-      validator: function (value : string) {
-        const firstNamestr = value.charAt(0).toUpperCase() + value.slice(1)
-        return firstNamestr === value;
+    firstName: {
+      type: String,
+      required: true,
+      trim: true,
+      validate: {
+        validator: function (value: string) {
+          const firstNamestr = value.charAt(0).toUpperCase() + value.slice(1);
+          return firstNamestr === value;
+        },
+        message: '{VALUE} is not a capitalize',
       },
-      message: '{VALUE} is not a capitalize'
-    }
-    
     },
-    lastName: { type: String, required: true, trim: true }, 
+    lastName: { type: String, required: true, trim: true },
   },
   gender: {
     type: String,
@@ -61,6 +71,36 @@ const studentSchema = new Schema<Student>({
     enum: ['Active', 'inActive'],
     default: 'Active',
   },
+  isDeleted: {type: Boolean, default: false}
 });
 
-export const StudentModel = model<Student>('Student', studentSchema);
+// pre save middleware
+studentSchema.pre('save', async function (next) {
+  // console.log(this, 'pre hook');
+  const user = this;
+  user.password = await bcrypt.hash(user.password, Number(config.bcrypt_salt));
+  next()
+});
+
+// post save middleware
+studentSchema.post('save', function (doc,next) {
+  doc.password = '';
+  next()
+});
+
+// create a custom static method
+// studentSchema.statics.isUserExists = async function(id:string){
+//   const existingUser = await StudentStaticModel.findOne({id})
+//   return existingUser;
+// }
+
+// creating a custom instance method
+studentSchema.methods.isUserExists = async function (id: string) {
+  const existingUser = await StudentModel.findOne({ id });
+  return existingUser;
+};
+
+export const StudentModel = model<Student, StudentCustomModel>(
+  'Student',
+  studentSchema,
+);

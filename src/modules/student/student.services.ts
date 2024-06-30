@@ -3,6 +3,10 @@ import { StudentModel } from './student.model';
 
 const createStudentIntoDB = async (student: Student) => {
   const result = await StudentModel.create(student);
+
+  if (await result.isUserExists(student.id)) {
+    throw new Error('user already exists');
+  }
   return result;
 };
 
@@ -16,8 +20,14 @@ const getSingleStudentFromDB = async (id: string) => {
   return result;
 };
 
+const deleteStudentFromDB = async (id: string) => {
+  const result = StudentModel.updateOne({ id }, { isDeleted: true });
+  return result;
+};
+
 export const StudentServices = {
   createStudentIntoDB,
   getAllStudentFromDB,
   getSingleStudentFromDB,
+  deleteStudentFromDB,
 };
