@@ -24,54 +24,66 @@ const Localguadian = new Schema<LocalGuardian>({
   address: { type: String, required: true },
 });
 
-const studentSchema = new Schema<Student, StudentCustomModel>({
-  id: { type: String, required: true, unique: true },
-  password: { type: String },
-  name: {
-    firstName: {
-      type: String,
-      required: true,
-      trim: true,
-      validate: {
-        validator: function (value: string) {
-          const firstNamestr = value.charAt(0).toUpperCase() + value.slice(1);
-          return firstNamestr === value;
+const studentSchema = new Schema<Student, StudentCustomModel>(
+  {
+    id: { type: String, required: true, unique: true },
+    password: { type: String },
+    name: {
+      firstName: {
+        type: String,
+        required: true,
+        trim: true,
+        validate: {
+          validator: function (value: string) {
+            const firstNamestr = value.charAt(0).toUpperCase() + value.slice(1);
+            return firstNamestr === value;
+          },
+          message: '{VALUE} is not a capitalize',
         },
-        message: '{VALUE} is not a capitalize',
       },
+      lastName: { type: String, required: true, trim: true },
     },
-    lastName: { type: String, required: true, trim: true },
-  },
-  gender: {
-    type: String,
-    enum: {
-      values: ['male', 'female'],
-      message: 'select male or female',
+    gender: {
+      type: String,
+      enum: {
+        values: ['male', 'female'],
+        message: 'select male or female',
+      },
+      required: true,
     },
-    required: true,
+    dateOfBirth: { type: String },
+    email: { type: String, required: true, unique: true },
+    contactNumber: { type: String, required: true },
+    BloodGroup: {
+      type: String,
+      enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+    },
+    guardian: {
+      type: guardianName,
+      required: true,
+    },
+    localGuardian: {
+      type: Localguadian,
+      required: true,
+    },
+    profileImage: { type: String },
+    isActive: {
+      type: String,
+      enum: ['Active', 'inActive'],
+      default: 'Active',
+    },
+    isDeleted: { type: Boolean, default: false },
   },
-  dateOfBirth: { type: String },
-  email: { type: String, required: true, unique: true },
-  contactNumber: { type: String, required: true },
-  BloodGroup: {
-    type: String,
-    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+  {
+    toJSON: {
+      virtuals: true,
+    },
   },
-  guardian: {
-    type: guardianName,
-    required: true,
-  },
-  localGuardian: {
-    type: Localguadian,
-    required: true,
-  },
-  profileImage: { type: String },
-  isActive: {
-    type: String,
-    enum: ['Active', 'inActive'],
-    default: 'Active',
-  },
-  isDeleted: {type: Boolean, default: false}
+);
+
+// mongoose virtual
+studentSchema.virtual('fullName').get(function () {
+  return `${this.name.firstName} ${this.name.lastName}`;
 });
 
 // pre save middleware
@@ -79,14 +91,31 @@ studentSchema.pre('save', async function (next) {
   // console.log(this, 'pre hook');
   const user = this;
   user.password = await bcrypt.hash(user.password, Number(config.bcrypt_salt));
-  next()
+  next();
 });
 
 // post save middleware
-studentSchema.post('save', function (doc,next) {
+studentSchema.post('save', function (doc, next) {
   doc.password = '';
-  next()
+  next();
 });
+
+// query middleware
+// studentSchema.pre('find', function (next) {
+//   this.find({ isDeleted: { $ne: true } });
+//   next();
+// });
+
+// studentSchema.pre('findOne', function (next) {
+//   this.find({ isDeleted: { $ne: true } });
+//   next();
+// });
+
+// aggregation middleware
+// studentSchema.pre('aggregate', function (next) {
+//   this.pipeline().unshift({ $match: { isDeleted: { $ne: true } } });
+//   next();
+// });
 
 // create a custom static method
 // studentSchema.statics.isUserExists = async function(id:string){
