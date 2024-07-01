@@ -25,9 +25,15 @@ const deleteStudentFromDB = async (id: string) => {
   return result;
 };
 
+const updateStudentFromDB = async (id: string, body: Student) => {
+  const result = await StudentModel.updateOne({ id: id }, body);
+  return result;
+};
+
 export const StudentServices = {
   createStudentIntoDB,
   getAllStudentFromDB,
   getSingleStudentFromDB,
   deleteStudentFromDB,
+  updateStudentFromDB,
 };

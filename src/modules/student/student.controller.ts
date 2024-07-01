@@ -14,13 +14,12 @@ const createStudnet = async (req: Request, res: Response) => {
       message: 'student create successfully',
       data: result,
     });
-
-  } catch (error:any) {
+  } catch (error: any) {
     res.status(500).json({
       success: false,
       message: error.message || 'something went wrong',
-      error: error
-    })
+      error: error,
+    });
   }
 };
 
@@ -68,9 +67,37 @@ const deleteSingleStudent = async (req: Request, res: Response) => {
   }
 };
 
+const updateSingleStudent = async (req: Request, res: Response) => {
+  try {
+    // const { studentId } = req.params;
+    const updateData = req.body.student;
+    // console.log('Updating student with ID:', studentId);
+    console.log('Update data:', updateData);
+
+    const validatedUpdateData = studentValidationSchema.parse(updateData);
+    const result = await StudentServices.updateStudentFromDB(
+      updateData.id,
+      validatedUpdateData,
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Student data update successfully',
+      data: result,
+    });
+  } catch (error:any) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update student data',
+      error: error.message, 
+    });
+  }
+};
+
 export const StudentController = {
   createStudnet,
   getAllStudent,
   getSingleStudent,
-  deleteSingleStudent
+  deleteSingleStudent,
+  updateSingleStudent,
 };
