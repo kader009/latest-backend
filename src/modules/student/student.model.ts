@@ -83,7 +83,7 @@ const studentSchema = new Schema<Student, StudentCustomModel>(
 
 // mongoose virtual
 studentSchema.virtual('fullName').get(function () {
-  return `${this.name.firstName} ${this.name.lastName}`;
+  return `${this.name.firstName} ${this.name.lastName}`; 
 });
 
 // pre save middleware
@@ -124,10 +124,10 @@ studentSchema.post('save', function (doc, next) {
 // }
 
 // creating a custom instance method
-studentSchema.methods.isUserExists = async function (id: string) {
-  const existingUser = await StudentModel.findOne({ id });
-  return existingUser;
-};
+// studentSchema.methods.isUserExists = async function (id: string) {
+//   const existingUser = await StudentModel.findOne({ id });
+//   return existingUser;
+// };
 
 export const StudentModel = model<Student, StudentCustomModel>(
   'Student',

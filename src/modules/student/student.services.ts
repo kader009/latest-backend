@@ -4,9 +4,9 @@ import { StudentModel } from './student.model';
 const createStudentIntoDB = async (student: Student) => {
   const result = await StudentModel.create(student);
 
-  if (await result.isUserExists(student.id)) {
-    throw new Error('user already exists');
-  }
+  // if (await result.isUserExists(student.id)) {
+  //   throw new Error('user already exists');
+  // }
   return result;
 };
 
